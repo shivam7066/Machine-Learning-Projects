@@ -1,0 +1,14 @@
+Data File Description
+
+ Each line of the file IrisData.txt contains four values representing (in order) the sepal length, sepal width, petal length, and petal width of a type of iris flower, followed by the name of the iris type:  either setosa, versicolor, or virginica. Values are tab separated. There are 150 records in the file.
+
+Assignment
+
+Write a python program that does a single plot of sepal length versus petal length for all three varieties of iris flowers. Be sure to label your axes and print a title to your plot.  Name your program yourlastname_yourfirstname_2DPlot.py. Your program should read in and open the file named IrisData.txt and write out the plot to a png file named yourlastname_yourfirstname_MyPlot.png and to the screen when executed.
+
+What to Turn In
+
+Upload your program file to Canvas no later than 11:59pm on September 6, 2019.  Late programs will be penalized 3n points where n is the number of days late. This projects counts as 5% of your total grade.
+
+Here (Links to an external site.) is the data file.
+

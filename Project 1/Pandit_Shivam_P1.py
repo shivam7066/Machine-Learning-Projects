@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+#Author: Shivam Pandit
+#Date: 9/15/2019
+#Project 1
+#Description: Given a data set representing given the body length and dorsal fin length of a fish,
+#we have to create a k-Nearest Neighbor program that will predict if it is TigerFish1 or TigerFish0.
+"""
 #Import libraries for array objects and plotting
 import numpy as np
 import matplotlib.pyplot as plt

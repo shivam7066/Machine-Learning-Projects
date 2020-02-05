@@ -1,27 +1,14 @@
 """
 Author: Shivam Pandit
 Date: 10/24/2019
-Project 4: Naive Bayes for spam/ham 
+Project 4: Naive Bayes for spam/ham filter
 """
-import numpy as np
-import matplotlib.pyplot as plt
-import random
 import math
-import operator
 
 def vocabulary(train,stop):
     spam = 0
     ham = 0
     counted = dict()
-    stopw = set([])
-
-    #creating stop words set
-    with open(stop, 'r') as f:
-        for line in f:
-            if line!="\n":
-                word = line.strip()
-                stopw.add(word)
-    f.close()
   
     fin = open(train, "r")
     textline = fin.readline() 
@@ -35,20 +22,18 @@ def vocabulary(train,stop):
         else:
             ham = ham + 1
             
-        textline = cleantext(textline[1:])                 
-       
-        words = remove_stop_words(textline, stopw)
-        print(words)
-  
+        textline = cleantext(textline[1:])      #Removes special characters and symbols
+        words = remove_stop_words(textline, stop)  #Removes stopwords
+        #print(words)  
         counted = countwords(words, is_spam, counted) 
         textline = fin.readline()
-    print(counted)
-    vocab = make_percent_list(1, counted, spam, ham) 
-    print(vocab)
-    print("Ham:",ham)
-    print("Spam", spam)
+    #print(counted)
+    vocab = make_percent_list(0.4, counted, spam, ham) # k=0.4 gave best performance
+    #print(vocab)
+    #print("Ham:",ham)
+    #print("Spam", spam)
     fin.close()
-    
+    print("Vocabulary Created!!")
     return vocab, spam, ham
 
 
@@ -61,10 +46,19 @@ def cleantext(text):
             text = text.replace(letters, " ")
     return text
 
-def remove_stop_words(words, stop):
+def remove_stop_words(words, stop):    
+    stopw = set([])
+    #creating stop words set
+    with open(stop, 'r') as f:
+        for line in f:
+            if line!="\n":
+                word = line.strip()
+                stopw.add(word)
+    f.close()
+    
     words = words.split()
     words = set(words)
-    words = words.difference(stop)
+    words = words.difference(stopw)
     
     return words
 
@@ -97,20 +91,12 @@ def testvocab(test,stop,train_vocab, spam, ham):
     testspam = 0
     testham = 0
     counted = dict()
-    stopw = set([])
 
-    #creating stop words set
-    with open(stop, 'r') as f:
-        for line in f:
-            if line!="\n":
-                word = line.strip()
-                stopw.add(word)
-    f.close()
     tp=0 ; tn=0; fp=0; fn=0;
     pspam = spam/(spam + ham)
     pham = ham / (spam + ham)
-    print("P_Spam:", pspam)
-    print("P_Ham:", pham)
+    #print("P_Spam:", pspam)
+    #print("P_Ham:", pham)
     fin = open(test, "r")
     textline = fin.readline() 
     
@@ -124,17 +110,17 @@ def testvocab(test,stop,train_vocab, spam, ham):
             testham = testham + 1
             
         textline = cleantext(textline[1:])   
-        words = remove_stop_words(textline, stopw)
-        print(words)
+        words = remove_stop_words(textline, stop)
+        #print(words)
         p1 , p2 = checkvocab(words , train_vocab)
-        print("P1:", p1)
-        print("P2:", p2)
-        predict = round(compute_probability(p1, p2, pspam, pham ),3)
-        print("Predict:", predict)
+        #print("P1:", p1)
+        #print("P2:", p2)
+        predict = compute_probability(p1, p2, pspam, pham )
+        #print("Predict:", predict)
         
-        if predict >= 0.5 and is_spam == 1:
+        if predict > 0.5 and is_spam == 1:
             tp +=1
-        elif predict >= 0.5 and is_spam == 0:
+        elif predict > 0.5 and is_spam == 0:
             fp+=1
         elif predict <= 0.5 and is_spam == 1:
             fn+=1
@@ -144,21 +130,31 @@ def testvocab(test,stop,train_vocab, spam, ham):
         textline = fin.readline()
     ptest_spam = testspam/(testspam + testham)
     ptest_ham = testham / (testspam + testham)
+    
+    #Printing Results on Console for labelled test set
     print("Total Spam emails in Test set: ", testspam)
-    print("Total Ham emails in Test set: ", testham)    
-    print("True Positives: {}, True Negatives: {}, False Positives: {}, False Negatives: {}".format(tp, tn, fp, fn))
+    print("Total Ham emails in Test set: ", testham)   
+    print('*'*30)
+    print("Predictions by Spam Filter")
+    print('*'*30)
+    print("True Positives: {} | True Negatives: {} | False Positives: {} | False Negatives: {}".format(tp, tn, fp, fn))
     accuracy = (tp + tn) / (tp + tn + fp + fn)
+    accuracy = round(accuracy,3)
     precision = tp / (tp + fp)
+    precision = round(precision,3)
     recall = tp / (tp + fn)
+    recall = round(recall,3)
     f1_score = 2 * (1 / ((1 / precision) + (1 / recall)))
-    print("Accuracy: ", accuracy)
-    print("Precision: ", precision)
-    print("Recall: ", recall)
-    print("f1_score: ", f1_score)
+    f1_score = round(f1_score,3)
+    print("Accuracy: {} [{} %] " .format(accuracy, accuracy*100))
+    print("Precision: {} [{} %] ".format(precision, precision*100))
+    print("Recall: {} [{} %] " .format(recall, recall*100))
+    print("F1_score: {} [{} %] " .format(f1_score, f1_score*100))
+
     fin.close()
 
-def compute_probability(p1 , p2, ps, ph):
-    print("p1: {} p2: {} ps: {} ph:{}"  .format(p1, p2, ps, ph))
+def compute_probability(p1 , p2, ps, ph): #p1 : P(SL/S) , p2:P(SL/notS) , ps: P(S) , ph: P(NotH)
+    #print("p1: {} p2: {} ps: {} ph:{}"  .format(p1, p2, ps, ph))
     pf = (p1 * ps) / (( p1 * ps ) + ( p2 * ph ))
     
     return pf
@@ -169,27 +165,33 @@ def checkvocab(words, vocab):
     
     for key, values in vocab.items():
         if key in words:
-            p1 *= values[1]
-            p2 *= values[0]
+            p1 += math.log(values[1])  #Used LOG to avoid underflow
+            p2 += math.log(values[0])  #Used LOG to avoid underflow
         
         else: 
-            p1 *= (1 - values[1])
-            p2 *= (1 - values[0])
-    return p1,p2
+            p1 += math.log(1 - values[1])  #Used LOG to avoid underflow
+            p2 += math.log(1 - values[0])   #Used LOG to avoid underflow
+            
+    return math.exp(p1), math.exp(p2)
     
     
 def main():
-    train = "GEASTrain.txt"
-    stop = "StopWords.txt"
-    test = "GEASTest.txt"
+    #train = "Geastrain.txt"
+    #stop = "StopWords.txt"
+    #test = "Geastest.txt"
     
-    #train = input("Enter name of training set file:")
-    #stop = input("Enter name of stop words file:)
-    #test = input("Enter name of test words file:)
-    
+    #Take user inputs for train and stop text files
+    train = input("Enter name of training set file:")
+    stop = input("Enter name of stop words file:")
+        
     #Create Train Vocabulary    
     train_vocab, spam, ham = vocabulary(train,stop)
     
+    #Take users input for labelled test data to predict
+    test = input("Enter name of test words file:")
+    
+    print("\n")
+    #Testing on labelled test set and getting performance metrics
     testvocab(test,stop, train_vocab, spam, ham)
         
      
